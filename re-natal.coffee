@@ -338,6 +338,8 @@ copyDevEnvironmentFilesForPlatform = (platform, interfaceName, projNameHyph, pro
   edit mainDevPath, [[projNameHyphRx, projNameHyph], [projNameRx, projName], [platformRx, platform]]
 
 generateConfigNs = (config) ->
+  fs.copySync("#{resources}/rn-cli.config.js", "./rn-cli.config.js")
+
   template = hb.compile(readFile "#{resources}/config.cljs")
   fs.writeFileSync("#{config.envRoots.dev}/env/config.cljs", template(config))
 
@@ -561,6 +563,9 @@ init = (interfaceName, projName, platforms) ->
         start: 'node node_modules/react-native/local-cli/cli.js start'
         'run-ios': 'node node_modules/react-native/local-cli/cli.js run-ios',
         'run-android': 'node node_modules/react-native/local-cli/cli.js run-android',
+        # rn-cli-config.js & Node v8+ exposes GC avoids the GC out of memory errors when Babel compiles large Clojurescript output
+        'bundle-ios': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output ios/main.jsbundle --entry-file index.ios.js --platform ios --assets-dest ios',
+        'bundle-android': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output android/main.jsbundle --entry-file index.android.js --platform android --assets-dest android'
       dependencies:
         'react-native': rnVersion
         '@babel/plugin-external-helpers': '^7.0.0'
