@@ -34,8 +34,8 @@ ipAddressRx     = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/i
 debugHostRx     = /host]\s+\?:\s+@".*";/g
 namespaceRx     = /\(ns\s+([A-Za-z0-9.-]+)/g
 jsRequireRx     = /js\/require "(.+)"/g
-rnVersion       = '0.57.0'
-rnWinVersion    = '0.57.0'
+rnVersion       = '0.57.7'
+rnWinVersion    = '0.57.0-rc.0'
 rnPackagerPort  = 8081
 process.title   = 're-natal'
 buildProfiles     =
@@ -131,7 +131,7 @@ ensureExecutableAvailable = (executable) ->
     exec "type #{executable}"
 
 isYarnAvailable = () ->
-    exec 'yarn -v'
+    false
 
 isSomeDepsMissing = () ->
   depState = ckDeps.sync {install: false, verbose: false}
@@ -338,8 +338,6 @@ copyDevEnvironmentFilesForPlatform = (platform, interfaceName, projNameHyph, pro
   edit mainDevPath, [[projNameHyphRx, projNameHyph], [projNameRx, projName], [platformRx, platform]]
 
 generateConfigNs = (config) ->
-  fs.copySync("#{resources}/rn-cli.config.js", "./rn-cli.config.js")
-
   template = hb.compile(readFile "#{resources}/config.cljs")
   fs.writeFileSync("#{config.envRoots.dev}/env/config.cljs", template(config))
 
@@ -516,6 +514,14 @@ generateWpfProject = (projName) ->
   appReactPagePath = "wpf/#{projName}/AppReactPage.cs"
   edit appReactPagePath, [[/public.*JavaScriptMainModuleName.*;/g, "public override string JavaScriptMainModuleName => \"index.wpf\";"]]
 
+updateBabelRc = () ->
+  babelRcJson = readConfig('.babelrc')
+  babelRcJson.ignore = [
+    "./index.ios.js",
+    "./index.android.js"
+  ]
+  writeConfig(babelRcJson, '.babelrc')
+
 init = (interfaceName, projName, platforms) ->
   if projName.toLowerCase() is 'react' or !projName.match validNameRx
     logErr 'Invalid project name. Use an alphanumeric CamelCase name.'
@@ -563,7 +569,6 @@ init = (interfaceName, projName, platforms) ->
         start: 'node node_modules/react-native/local-cli/cli.js start'
         'run-ios': 'node node_modules/react-native/local-cli/cli.js run-ios',
         'run-android': 'node node_modules/react-native/local-cli/cli.js run-android',
-        # rn-cli-config.js & Node v8+ exposes GC avoids the GC out of memory errors when Babel compiles large Clojurescript output
         'bundle-ios': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output ios/main.jsbundle --entry-file index.ios.js --platform ios --assets-dest ios',
         'bundle-android': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output android/main.jsbundle --entry-file index.android.js --platform android --assets-dest android'
       dependencies:
@@ -595,6 +600,8 @@ init = (interfaceName, projName, platforms) ->
     generateConfigNs(config);
 
     copyFigwheelBridge(projNameUs)
+
+    updateBabelRc()
 
     log 'Compiling ClojureScript'
     exec 'lein prod-build'
