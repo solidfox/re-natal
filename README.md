@@ -415,7 +415,8 @@ Packager so try to avoid doing so.
 - You can launch your app on the simulator without opening Xcode by running
 `react-native run-ios` in your app's root directory (since RN 0.19.0).
 
-- To change advanced settings run `re-natal xcode` to quickly open the Xcode project.
+- To change advanced settings run `re-natal xcode` to quickly open the Xcode project. (A workspace 
+will be opened in preference to a project if present.)
 
 - If you have customized project layout and `re-natal upgrade` does not fit you well,
 then these commands might be useful for you:
@@ -450,7 +451,7 @@ $ node ../re-natal/index.js
     init [options] <name>              create a new ClojureScript React Native project
     upgrade                            upgrades project files to current installed version of re-natal (the upgrade of re-natal itself is done via npm)
     add-platform <platform>            adds additional app platform: 'windows' - UWP app, 'wpf' - WPF app
-    xcode                              open Xcode project
+    xcode                              open Xcode project (or workspace if present)
     deps                               install all dependencies for the project
     use-figwheel                       generate index.*.js for development with figwheel
     use-android-device <type>          sets up the host for android device type: 'real' - localhost, 'avd' - 10.0.2.2, 'genymotion' - 10.0.3.2, IP

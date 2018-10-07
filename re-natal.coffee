@@ -675,17 +675,21 @@ addPlatform = (platform) ->
     logErr message
 
 openXcode = (name) ->
+  if fs.existsSync "ios/#{name}.xcworkspace"
+    openTarget = "#{name}.xcworkspace"
+  else
+    openTarget = "#{name}.xcodeproj"
   try
-    exec "open ios/#{name}.xcodeproj"
+    exec "open ios/#{openTarget}"
   catch {message}
     logErr \
       if message.match /ENOENT/i
         """
-        Cannot find #{name}.xcodeproj in ios.
+        Cannot find #{openTarget} in ios.
         Run this command from your project's root directory.
         """
       else if message.match /EACCES/i
-        "Invalid permissions for opening #{name}.xcodeproj in ios"
+        "Invalid permissions for opening #{openTarget} in ios"
       else
         message
 
@@ -941,7 +945,7 @@ cli.command 'add-platform <platform>'
     addPlatform(platform)
 
 cli.command 'xcode'
-  .description 'open Xcode project'
+  .description 'open Xcode project (or workspace if present)'
   .action ->
     ensureOSX ->
       ensureXcode ->
