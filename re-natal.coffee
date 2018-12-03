@@ -34,8 +34,8 @@ ipAddressRx     = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/i
 debugHostRx     = /host]\s+\?:\s+@".*";/g
 namespaceRx     = /\(ns\s+([A-Za-z0-9.-]+)/g
 jsRequireRx     = /js\/require "(.+)"/g
-rnVersion       = '0.55.4'
-rnWinVersion    = '0.55.0-rc.0'
+rnVersion       = '0.57.7'
+rnWinVersion    = '0.57.0-rc.0'
 rnPackagerPort  = 8081
 process.title   = 're-natal'
 buildProfiles     =
@@ -65,7 +65,7 @@ interfaceConf   =
       common:  ["events.cljs", "subs.cljs", "db.cljs"]
       other:   [["reagent_dom.cljs","reagent/dom.cljs"], ["reagent_dom_server.cljs","reagent/dom/server.cljs"]]
     deps:      ['[reagent "0.8.1" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server cljsjs/create-react-class]]'
-                '[re-frame "0.10.5"]']
+                '[re-frame "0.10.6"]']
     shims:     []
     sampleCommandNs: '(in-ns \'$PROJECT_NAME_HYPHENATED$.ios.core)'
     sampleCommand: '(dispatch [:set-greeting "Hello Native World!"])'
@@ -74,7 +74,7 @@ interfaceConf   =
     sources:
       common:  ["state.cljs"]
       other:   [["support.cljs","re_natal/support.cljs"]]
-    deps:      ['[org.omcljs/om "1.0.0-beta3" :exclusions [cljsjs/react cljsjs/react-dom]]']
+    deps:      ['[org.omcljs/om "1.0.0-beta4" :exclusions [cljsjs/react cljsjs/react-dom]]']
     shims:     ["cljsjs.react", "cljsjs.react.dom"]
     sampleCommandNs: '(in-ns \'$PROJECT_NAME_HYPHENATED$.state)'
     sampleCommand: '(swap! app-state assoc :app/msg "Hello Native World!")'
@@ -514,6 +514,14 @@ generateWpfProject = (projName) ->
   appReactPagePath = "wpf/#{projName}/AppReactPage.cs"
   edit appReactPagePath, [[/public.*JavaScriptMainModuleName.*;/g, "public override string JavaScriptMainModuleName => \"index.wpf\";"]]
 
+updateBabelRc = () ->
+  babelRcJson = readConfig('.babelrc')
+  babelRcJson.ignore = [
+    "./index.ios.js",
+    "./index.android.js"
+  ]
+  writeConfig(babelRcJson, '.babelrc')
+
 init = (interfaceName, projName, platforms) ->
   if projName.toLowerCase() is 'react' or !projName.match validNameRx
     logErr 'Invalid project name. Use an alphanumeric CamelCase name.'
@@ -559,10 +567,15 @@ init = (interfaceName, projName, platforms) ->
       private: true
       scripts:
         start: 'node node_modules/react-native/local-cli/cli.js start'
+        'run-ios': 'node node_modules/react-native/local-cli/cli.js run-ios',
+        'run-android': 'node node_modules/react-native/local-cli/cli.js run-android',
+        'bundle-ios': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output ios/main.jsbundle --entry-file index.ios.js --platform ios --assets-dest ios',
+        'bundle-android': 'lein prod-build && node --expose-gc --max_old_space_size=8192 \'./node_modules/react-native/local-cli/cli.js\' bundle --sourcemap-output main.jsbundle.map --bundle-output android/main.jsbundle --entry-file index.android.js --platform android --assets-dest android'
       dependencies:
         'react-native': rnVersion
-        # Fixes issue with packager 'TimeoutError: transforming ... took longer than 301 seconds.'
-        'babel-plugin-transform-es2015-block-scoping': '6.15.0'
+        '@babel/plugin-external-helpers': '^7.0.0'
+      devDependencies:
+        'metro-react-native-babel-preset': '0.45.4'
 
     if 'windows' in platforms || 'wpf' in platforms
       pkg.dependencies['react-native-windows'] = rnWinVersion
@@ -588,6 +601,8 @@ init = (interfaceName, projName, platforms) ->
 
     copyFigwheelBridge(projNameUs)
 
+    updateBabelRc()
+
     log 'Compiling ClojureScript'
     exec 'lein prod-build'
 
@@ -596,7 +611,7 @@ init = (interfaceName, projName, platforms) ->
     log "cd #{projNameHyph}", 'inverse'
     log ''
     log 'Run iOS app:' , 'yellow'
-    log 'react-native run-ios > /dev/null', 'inverse'
+    log 'react-native run-ios --configuration Debug > /dev/null', 'inverse'
     log ''
     log 'To use figwheel type:' , 'yellow'
     log 're-natal use-figwheel', 'inverse'
@@ -768,7 +783,7 @@ generateDevScripts = () ->
 
     for platform in platforms
       moduleMap = generateRequireModulesCode(platformModulesAndImages(config, platform))
-      fs.writeFileSync "index.#{platform}.js", "#{moduleMap}require('figwheel-bridge').withModules(modules).start('#{projName}','#{platform}','#{devHost[platform]}');"
+      fs.writeFileSync "index.#{platform}.js", "#{moduleMap}require('./figwheel-bridge').withModules(modules).start('#{projName}','#{platform}','#{devHost[platform]}');"
       log "index.#{platform}.js was regenerated"
 
     updateIosRCTWebSocketExecutor(devHost.ios)
