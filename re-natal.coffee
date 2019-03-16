@@ -741,6 +741,7 @@ buildRequireByPlatformMap = () ->
     item.path.indexOf('/re-natal/') < 0 # ignore re-natal internal cljs files (can happen if re-natal is installed as a devDependency)
   files = klawSync process.cwd(),
     nodir: true
+    traverseAll: true
     filter: onlyUserCljs
   filenames = files.map((o) -> o.path)
   extractedRequires = filenames.map(extractRequiresFromSourceFile)
