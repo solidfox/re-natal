@@ -34,8 +34,8 @@ ipAddressRx     = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/i
 debugHostRx     = /host]\s+\?:\s+@".*";/g
 namespaceRx     = /\(ns\s+([A-Za-z0-9.-]+)/g
 jsRequireRx     = /js\/require "(.+)"/g
-rnVersion       = '0.57.7'
-rnWinVersion    = '0.57.0-rc.0'
+rnVersion       = '0.59.5'
+rnWinVersion    = '0.57.1'
 rnPackagerPort  = 8081
 process.title   = 're-natal'
 buildProfiles     =
@@ -515,7 +515,7 @@ generateWpfProject = (projName) ->
   edit appReactPagePath, [[/public.*JavaScriptMainModuleName.*;/g, "public override string JavaScriptMainModuleName => \"index.wpf\";"]]
 
 updateBabelRc = () ->
-  babelRcJson = readConfig('.babelrc')
+  babelRcJson = readConfig('.babelrc', false)
   babelRcJson.ignore = [
     "./index.ios.js",
     "./index.android.js"
@@ -611,7 +611,7 @@ init = (interfaceName, projName, platforms) ->
     log "cd #{projNameHyph}", 'inverse'
     log ''
     log 'Run iOS app:' , 'yellow'
-    log 'react-native run-ios --configuration Debug > /dev/null', 'inverse'
+    log 'react-native run-ios > /dev/null', 'inverse'
     log ''
     log 'To use figwheel type:' , 'yellow'
     log 're-natal use-figwheel', 'inverse'
