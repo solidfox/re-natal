@@ -716,13 +716,15 @@ extractRequiresFromSourceFile = (file) ->
   requires: requires
 
 buildRequireByPlatformMap = () ->
-  onlyUserCljs = (item) -> fpath.extname(item.path) == '.cljs' and
-    item.path.indexOf('/target/') < 0 and # ignore target dir
-    item.path.indexOf('/re-natal/') < 0 # ignore re-natal internal cljs files (can happen if re-natal is installed as a devDependency)
-  files = klawSync process.cwd(),
+  workdir = process.cwd()
+  onlyUserCljs = (item) -> 
+    localpath = item.path.replace workdir, ''
+    fpath.extname(localpath) == '.cljs' and localpath.indexOf('/target/') < 0 and localpath.indexOf('/re-natal/') < 0 
+  
+  files = klawSync workdir,
     nodir: true
     traverseAll: true
-    filter: onlyUserCljs
+    filter: onlyUserCljs  
   filenames = files.map((o) -> o.path)
   extractedRequires = filenames.map(extractRequiresFromSourceFile)
 
