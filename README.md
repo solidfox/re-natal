@@ -455,17 +455,6 @@ Then to continue development using figwheel
 $ re-natal use-figwheel
 ```
 
-## Enabling source maps when debugging in chrome
-
-To make source maps available in "Debug in Chrome" mode re-natal patches
-the react native packager to serve \*.map files from file system and generate only index.\*.map file.
-To achieve this [this line](https://github.com/facebook/react-native/blob/0.29-stable/packager/react-packager/src/Server/index.js#L413)
-of file "node_modules/react-native/packager/react-packager/src/Server/index.js" is modified to match only index.\*.map
-
-To do this run: `re-natal enable-source-maps` and restart packager.
-
-You can undo this any time by deleting `node_modules` and running `re-natal deps`
-
 ## Example Apps
 
 - [Luno](https://github.com/alwx/luno-react-native) is a demo mobile application written in ClojureScript.
