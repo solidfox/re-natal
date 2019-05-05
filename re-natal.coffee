@@ -374,26 +374,6 @@ updateGitIgnore = (platforms) ->
 
   fs.appendFileSync(".gitignore", "\n# Figwheel\n#\nfigwheel_server.log")
 
-findPackagerFileToPatch = () ->
-  files = [
-    "node_modules/metro/src/Server/index.js",
-    "node_modules/metro-bundler/src/Server/index.js",
-    "node_modules/metro-bundler/build/Server/index.js",
-    "node_modules/react-native/packager/src/Server/index.js"]
-  fileToPatch = files[0];
-  for f in files
-    if fs.existsSync(f)
-      fileToPatch = f
-  fileToPatch
-
-patchReactNativePackager = () ->
-  installDeps()
-  fileToPatch = findPackagerFileToPatch()
-  log "Patching file #{fileToPatch} to serve *.map files."
-  edit fileToPatch,
-    [[/match\(\/\\.map\$\/\)/m, "match(/index\\..*\\.map$/)"]]
-  log "If the React Native packager is running, please restart it."
-
 shimCljsNamespace = (ns) ->
   filePath = "src/" + ns.replace(/\./g, "/") + ".cljs"
   filePath = filePath.replace(/-/g, "_")
@@ -1008,11 +988,6 @@ cli.command 'require-all'
   .description 'parses all cljs files in this project, extracts all (js/require) calls and adds required modules to .re-natal file'
   .action () ->
     inferComponents()
-
-cli.command 'enable-source-maps'
-  .description 'patches RN packager to server *.map files from filesystem, so that chrome can download them.'
-  .action () ->
-    patchReactNativePackager()
 
 cli.command 'set-figwheel-port <port>'
   .description 'configures the port of figwheel server (port 3449 is default)'
