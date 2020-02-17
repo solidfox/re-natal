@@ -464,6 +464,7 @@ $ re-natal use-figwheel
 - [Lymchat](https://github.com/tiensonqin/lymchat) App to learn different cultures. Lym is available in [App Store](https://itunes.apple.com/us/app/lym/id1134985541?ls=1&mt=8).
 - [Status](https://status.im) ([Github](https://github.com/status-im/status-react/)): a web3 browser, messenger, and gateway to a decentralised world of Ethereum. re-natal + re-frame + cljs + golang
 - [React Native TodoMVC](https://github.com/TashaGospel/todo-mvc-re-natal) is a mobile application which attempts to implement TodoMVC in Clojurescript and React Native.
+- [まいどく](https://www.link-u.co.jp/products/maidoku/) is a book store and reader available in Japan.
 
 ## Tips
 
